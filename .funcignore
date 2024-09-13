@@ -1,0 +1,11 @@
+.git*
+.vscode
+local.settings.json
+test
+.venv
+docs
+iac
+.pytest*
+.devcontainer
+__blobstorage__
+__azurite_db_blob*.*

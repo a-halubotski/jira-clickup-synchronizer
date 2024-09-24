@@ -3,7 +3,7 @@ import json
 import pytest
 
 
-from data import USERS_TO_CLICKUP
+from data_private import USERS_TO_CLICKUP
 from models.jira_issue import IssueModel
 
 USERS_TO_CLICKUP['Andrew H.'] = 666

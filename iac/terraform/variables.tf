@@ -36,9 +36,6 @@ variable "jira_user_name" {
 variable "jira_api_key" {
 }
 
-variable "jira_webhook_identifier" {
-}
-
 variable "clickup_api_key" {
 }
 

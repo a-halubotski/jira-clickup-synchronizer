@@ -1,3 +1,4 @@
+import logging
 import azure.functions as func
 from typing import Dict
 
@@ -38,11 +39,12 @@ def attrN(obj, attr: str, default=None):
 
 
 def authenticate_request(req: func.HttpRequest):
-    if validate_header(req.headers, 'x-atlassian-webhook-identifier', CONFIG.jira_webhook_id) \
+    if validate_header(req.headers, 'x-atlassian-webhook-identifier') \
             and validate_header(req.headers, 'user-agent', 'Atlassian Webhook HTTP Client'):
         return
 
     raise NotAuthorizedException('Not authorized')
 
-def validate_header(headers, name, value) -> bool:
-    return name in headers.keys() and headers[name] == value
+
+def validate_header(headers, name: str, value: str = None) -> bool:
+    return name in headers.keys() and (value == None or headers[name] == value)

@@ -18,7 +18,7 @@ class TaskModel(object):
         self.markdown_description = attrN(kwargs, 'markdown_description') or self.description
         self.status = attrN(kwargs, 'status') or attrN(kwargs, 'status.status')
         self.priority = attrN(kwargs, 'priority') or attrN(kwargs, 'priority.id')
-        self.assignees = kwargs['assignees'] if 'assignees' in kwargs else []
+        self.assignees = [] # kwargs['assignees'] if 'assignees' in kwargs else []
         self.parent = attrN(kwargs, 'parent')
         self.due_date = attrN(kwargs, 'due_date')
         self.due_date_time = False
@@ -84,10 +84,10 @@ class TaskUpdateModel(TaskModel):
         }
 
         task = cls(**body)
-        task.assignees = {
-            'add': add_assignees,
-            'rem': remove_assingees
-        }
+        # task.assignees = {
+        #     'add': add_assignees,
+        #     'rem': remove_assingees
+        # }
 
         return task
     

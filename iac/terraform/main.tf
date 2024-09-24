@@ -8,22 +8,13 @@ locals {
 
   func_name            = "${terraform.workspace}-${var.project_tag}-${var.location}"
   storage_account_name = replace("${terraform.workspace}-st-${var.project_tag}-pl", "-", "")
-
-  law_name = "${terraform.workspace}-law-${var.project_tag}-${var.location}"
-  rg_name  = "${terraform.workspace}-rg-${var.project_tag}-${var.location}"
 }
-
-## Data
-# data "azurerm_log_analytics_workspace" "global" {
-#   resource_group_name = azurerm_resource_group.rg.name
-#   name                = local.law_name
-# }
 
 ## Resources
 resource "azurerm_resource_group" "rg" {
-  name     = local.rg_name
+  name     = "${terraform.workspace}-rg-${var.project_tag}-${var.location}"
   location = var.location
-  tags     = merge(local.common_tags, { Name = local.rg_name })
+  tags     = merge(local.common_tags, { Name = "${terraform.workspace}-rg-${var.project_tag}-${var.location}" })
 }
 
 # App Service
@@ -102,8 +93,8 @@ resource "azurerm_linux_function_app" "func" {
     always_on     = false
     http2_enabled = true
 
-    # application_insights_key               = azurerm_application_insights.appi.instrumentation_key
-    # application_insights_connection_string = azurerm_application_insights.appi.connection_string
+    application_insights_key               = azurerm_application_insights.appi.instrumentation_key
+    application_insights_connection_string = azurerm_application_insights.appi.connection_string
 
     application_stack {
       python_version = "3.11"
@@ -117,7 +108,7 @@ resource "azurerm_linux_function_app" "func" {
     JiraBaseUrl       = var.jira_base_url
     JiraUsername      = var.jira_user_name
     JiraApiKey        = var.jira_api_key
-    JiraWebhookId     = var.jira_webhook_identifier
+
 
     ClickUpApiKey    = var.clickup_api_key
     ClickUpAccountId = var.clickup_account_id

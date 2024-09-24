@@ -1,9 +1,8 @@
 import json
-import logging
 import pytest
 
 
-from data import USERS_TO_CLICKUP
+from data_private import USERS_TO_CLICKUP
 from models.clickup_task import TaskModel
 from models.jira_issue import IssueModel
 

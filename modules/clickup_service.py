@@ -6,6 +6,7 @@ import requests
 
 from config import CONFIG, Config
 from models.clickup_task import TaskModel, TaskUpdateModel
+from models.task_comment import TaskCommentModel
 from utils import attr0
 
 
@@ -31,6 +32,10 @@ class ClickUpService(object):
     def update_task(self, task: TaskUpdateModel):
         logging.info(f'[ClickUpService.update_task] Updating task {task.id}')
         self._call_function(requests.put, f'v2/task/{task.id}', payload=task.as_json())
+
+    def create_comment(self, comment: TaskCommentModel):
+        logging.info(f'[ClickUpService.create_comment] Creating comment {comment.as_json()}')
+        self._call_function(requests.post, f'v2/task/{comment.task_id}/comment', payload=comment.as_json())
 
     def _call_function(self, method, url, args=None, payload=None) -> Dict:
         url = f'https://api.clickup.com/api/{url}'

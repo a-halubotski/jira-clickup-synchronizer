@@ -1,6 +1,6 @@
 
-import json
 from typing import Dict
+from data import DEFAULT_ASSIGNEE
 from data_private import USERS_TO_CLICKUP
 from models.jira_comment import IssueCommentModel
 from utils import attrN
@@ -14,12 +14,12 @@ class TaskCommentModel(object):
 
     @classmethod
     def from_issue_model(cls, clickup_id: str, comment: IssueCommentModel):
-        author_id = USERS_TO_CLICKUP[comment.author['name']] if (comment.author['name'] in USERS_TO_CLICKUP) else None
+        author_id = DEFAULT_ASSIGNEE # USERS_TO_CLICKUP[comment.author['name']] if (comment.author['name'] in USERS_TO_CLICKUP) else None
         body = {
             'task_id': clickup_id,
             'jira_comment_id': comment.id,
             'comment_text': comment.body,
-            'assignee': author_id
+            # 'assignee': author_id
         }
         return cls(**body)
 

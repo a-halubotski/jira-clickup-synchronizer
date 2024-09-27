@@ -62,7 +62,7 @@ def on_jira_comment_webhook(req: func.HttpRequest) -> func.HttpResponse:
         logging.debug(f'{key} -> {req.headers[key]}')
 
     try:
-        # authenticate_request(req)
+        authenticate_request(req)
         # logging.info(json.dumps(obj=req_body))
         comment = IssueCommentModel.from_webhook(req_body)
         ORCHESTATOR.sync_comment_to_clickup(comment)

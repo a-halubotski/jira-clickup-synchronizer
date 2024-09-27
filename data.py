@@ -11,3 +11,6 @@ STATUS_TO_CLICKUP = {
     'UAT To Verify': 'Testing',
     'Ready To Release': 'Ready For Release',
 }
+
+
+DEFAULT_ASSIGNEE = 88206996

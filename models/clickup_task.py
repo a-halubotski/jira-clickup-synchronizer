@@ -3,7 +3,7 @@
 from typing import List
 from datetime import datetime
 
-from data import STATUS_TO_CLICKUP
+from data import DEFAULT_ASSIGNEE, STATUS_TO_CLICKUP
 from data_private import USERS_TO_CLICKUP
 from models.jira_issue import IssueModel
 from utils import attrN
@@ -18,7 +18,7 @@ class TaskModel(object):
         self.markdown_description = attrN(kwargs, 'markdown_description') or self.description
         self.status = attrN(kwargs, 'status') or attrN(kwargs, 'status.status')
         self.priority = attrN(kwargs, 'priority') or attrN(kwargs, 'priority.id')
-        self.assignees = [] # kwargs['assignees'] if 'assignees' in kwargs else []
+        self.assignees = kwargs['assignees'] if 'assignees' in kwargs else []
         self.parent = attrN(kwargs, 'parent')
         self.due_date = attrN(kwargs, 'due_date')
         self.due_date_time = False
@@ -29,7 +29,7 @@ class TaskModel(object):
     def from_issue(cls, issue: IssueModel):
         mapped_status = STATUS_TO_CLICKUP[issue.status['name']] if (
             issue.status['name'] in STATUS_TO_CLICKUP) else STATUS_TO_CLICKUP['Backlog']
-        mapped_user = USERS_TO_CLICKUP[issue.assignee['name']] if (issue.assignee['name'] in USERS_TO_CLICKUP) else None
+        mapped_user = DEFAULT_ASSIGNEE # USERS_TO_CLICKUP[issue.assignee['name']] if (issue.assignee['name'] in USERS_TO_CLICKUP) else None
         parent_id = issue.parent.clickup_id if issue.parent else None
         # convert '2024-09-14' -> 1726264800000
         start_date = int(datetime.strptime(issue.start_date, '%Y-%m-%d').timestamp())*1000 if issue.start_date else None
@@ -41,7 +41,7 @@ class TaskModel(object):
             'description': issue.description,
             'status': mapped_status,
             'priority': 3,
-            'assignee': mapped_user,
+            'assignees': [mapped_user],
             'parent': parent_id,
             'due_date': due_date,
             'start_date': start_date

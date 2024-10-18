@@ -8,7 +8,6 @@ from data_private import USERS_TO_CLICKUP
 from models.jira_issue import IssueModel
 from utils import attrN
 
-
 class TaskModel(object):
 
     def __init__(self, **kwargs) -> None:
@@ -52,6 +51,11 @@ class TaskModel(object):
     @classmethod
     def from_api(cls, api_response):
         return cls(**api_response)
+    
+    @classmethod
+    def from_webhook(cls, webhook_response):
+        payload = attrN(webhook_response, 'payload')
+        return cls(**payload)
 
     def as_json(self):
         return self.__dict__

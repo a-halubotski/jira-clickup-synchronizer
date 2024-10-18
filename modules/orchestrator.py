@@ -2,6 +2,7 @@
 import logging
 
 from data_private import PROJECT_MAPPING, USERS_TO_CLICKUP
+from models.clickup_comment import ClickupCommentModel
 from models.clickup_task import TaskModel, TaskUpdateModel
 from models.jira_comment import IssueCommentModel
 from models.jira_issue import IssueModel
@@ -47,11 +48,18 @@ class Orchestrator(object):
         if not issue or not issue.clickup_id:
             logging.info(f'[Orchestrator.sync_comment_to_clickup] Issue not synchronized: {comment.issue_key}')
             return
-        
+
         task_comment = TaskCommentModel.from_issue_model(issue.clickup_id, comment)
-        
+
         self._clickup.create_comment(task_comment)
 
+    def sync_comment_to_jira(self, clickup_comment: ClickupCommentModel):
+        logging.info(f'[Orchestrator.sync_comment_to_jira] Task: {clickup_comment.as_json()}')
+        # Find JIRA task
+        jira_issue = self._jira.get_issue_by_clickup_id(clickup_comment.task_id)
+        if jira_issue and jira_issue.key != None:
+            jira_comment = IssueCommentModel.from_clickup_model(key=jira_issue.key, clickup_model=clickup_comment)
+            self._jira.create_issue_comment(jira_comment)
 
     def _create_task(self, issue: IssueModel):
         list_id = PROJECT_MAPPING[issue.project_key]

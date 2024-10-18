@@ -119,4 +119,5 @@ See configuration section.
 ## References
 JIRA API: https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/#version  
 JIRA Webhooks: https://teqniksoft.atlassian.net/plugins/servlet/webhooks#  
-ClickUp API: https://clickup.com/api/clickupreference/operation/GetTask/  
+ClickUp API: https://clickup.com/api/clickupreference/operation/GetTask/
+ClickUp WebHooks API: https://clickup.com/api/clickupreference/operation/GetWebhooks/

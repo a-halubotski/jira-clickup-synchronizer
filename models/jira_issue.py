@@ -46,6 +46,7 @@ class IssueModel(object):
         body = {
             'issue': {
                 'id': attrN(api_json, 'id'),
+                'key': attrN(api_json, 'key'),
                 'fields': {
                     'customfield_11257': attrN(fields, 'customfield_11257'),
                 }

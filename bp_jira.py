@@ -57,9 +57,9 @@ def on_jira_comment_webhook(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('[bp_jira.on_jira_comment_webhook]: Request received...')
     req_body = req.get_json()
 
-    logging.debug('HEADERS')
-    for key in req.headers.keys():
-        logging.debug(f'{key} -> {req.headers[key]}')
+    # logging.debug('HEADERS')
+    # for key in req.headers.keys():
+    #     logging.debug(f'{key} -> {req.headers[key]}')
 
     try:
         authenticate_request(req)

@@ -13,8 +13,6 @@ def attr_safe(obj: Dict, attr: str, default=None):
 
 
 """Safely returns first element of array"""
-
-
 def attr0(obj, attr, default=None):
     found = attr_safe(obj, attr, default)
     if found and isinstance(found, list) and len(found):

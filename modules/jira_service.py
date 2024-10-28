@@ -1,6 +1,4 @@
-import json
 import logging
-from os import name
 import time
 import requests
 
@@ -31,7 +29,7 @@ class JiraService(object):
     def update_issue_clickup_id(self, issue_key: str, clickup_id: str):
         logging.info(
             f"[JiraService.update_issue_clickup_id] Assigning ClickUp ID '{clickup_id}' to JIRA issue '{issue_key}'")
-        self._call_function(requests.put, f'issue/{issue_key}', args='notifyUsers=false',
+        self._call_function(requests.put, f'issue/{issue_key}', # args='notifyUsers=false', # admin rights required to discard notification.
                             payload={'fields': {'customfield_11257': clickup_id}})
 
     """ Returns Jira Issue by ClickUp ID.

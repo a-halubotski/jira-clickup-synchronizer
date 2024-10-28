@@ -24,8 +24,8 @@ def on_jira_issue_webhook(req: func.HttpRequest) -> func.HttpResponse:
     req_body = req.get_json()
 
     # logging.info('HEADERS')
-    for key in req.headers.keys():
-        logging.info(f'{key} -> {req.headers[key]}')
+    # for key in req.headers.keys():
+    #     logging.info(f'{key} -> {req.headers[key]}')
 
     try:
         authenticate_request(req)
@@ -63,7 +63,7 @@ def on_jira_comment_webhook(req: func.HttpRequest) -> func.HttpResponse:
 
     try:
         authenticate_request(req)
-        # logging.info(json.dumps(obj=req_body))
+        logging.info(json.dumps(obj=req_body))
         comment = IssueCommentModel.from_webhook(req_body)
         ORCHESTATOR.sync_comment_to_clickup(comment)
 

@@ -7,7 +7,6 @@ import requests
 from config import CONFIG, Config
 from models.clickup_task import TaskModel, TaskUpdateModel
 from models.task_comment import TaskCommentModel
-from utils import attr0
 
 
 class ClickUpService(object):

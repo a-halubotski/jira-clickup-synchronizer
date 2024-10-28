@@ -10,6 +10,9 @@ from models.task_comment import TaskCommentModel
 from modules.clickup_service import CLICKUP_SERVICE, ClickUpService
 from modules.jira_service import JIRA_SERVICE, JiraService
 
+CLICKUP_PIVOTICS_DEV_USER_ID = 88206996
+JIRA_USER_FOR_CLICKUP_COMMENTS= "712020:e673ab54-0a31-44ca-887d-99ce7b45d856"
+
 
 class Orchestrator(object):
 
@@ -44,7 +47,11 @@ class Orchestrator(object):
 
     def sync_comment_to_clickup(self, comment: IssueCommentModel):
         logging.info(f'[Orchestrator.sync_comment_to_clickup] Comment: {comment.as_json()}')
-        issue = self._jira.get_issue(comment.issue_key)
+        # Do not sync comments from me (workaround when symc from ClickUp triggers webhook event)
+        if comment.author['id'] == JIRA_USER_FOR_CLICKUP_COMMENTS:
+            logging.warning("Self JIRA comment")
+            return
+        issue: IssueModel = self._jira.get_issue(comment.issue_key)
         if not issue or not issue.clickup_id:
             logging.info(f'[Orchestrator.sync_comment_to_clickup] Issue not synchronized: {comment.issue_key}')
             return
@@ -55,6 +62,10 @@ class Orchestrator(object):
 
     def sync_comment_to_jira(self, clickup_comment: ClickupCommentModel):
         logging.info(f'[Orchestrator.sync_comment_to_jira] Task: {clickup_comment.as_json()}')
+        # Check if it's not automated comment syncronized from JIRA.
+        if clickup_comment.creator_id == CLICKUP_PIVOTICS_DEV_USER_ID:
+            logging.info(f'[Orchestrator.sync_comment_to_jira] Self ClickUp comment')
+            return
         # Find JIRA task
         jira_issue = self._jira.get_issue_by_clickup_id(clickup_comment.task_id)
         if jira_issue and jira_issue.key != None:

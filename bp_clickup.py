@@ -7,11 +7,7 @@ import azure.functions as func
 from azure.functions.decorators.core import AuthLevel
 from exceptions.NotAuthorizedException import NotAuthorizedException
 from models.clickup_comment import ClickupCommentModel
-from models.clickup_task import TaskModel
-from models.jira_comment import IssueCommentModel
-from models.jira_issue import IssueModel
 from modules.orchestrator import ORCHESTATOR
-from utils import authenticate_request
 
 APPLICATION_JSON_MIMETYPE = 'application/json'
 
@@ -25,9 +21,9 @@ def on_clickup_comment_webhook(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f'[bp_clickup.on_clickup_comment_webhook]: Request received... {req.url}')
     req_body = req.get_json()
 
-    # logging.debug('HEADERS')
-    # for key in req.headers.keys():
-    #     logging.info(f'{key} -> {req.headers[key]}')
+    logging.debug('HEADERS')
+    for key in req.headers.keys():
+        logging.info(f'{key} -> {req.headers[key]}')
 
     try:
         # authenticate_request(req)
@@ -37,7 +33,8 @@ def on_clickup_comment_webhook(req: func.HttpRequest) -> func.HttpResponse:
 
         return func.HttpResponse(status_code=200, mimetype=APPLICATION_JSON_MIMETYPE)
     except NotAuthorizedException:
-        return func.HttpResponse(status_code=403)
+        logging.error(ex)
+        return func.HttpResponse(status_code=200)
 
     except Exception as ex:
         logging.error(ex, stack_info=True)

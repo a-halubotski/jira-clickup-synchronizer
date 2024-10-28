@@ -10,6 +10,7 @@ class ClickupCommentModel(object):
         self.task_id = attrN(kwargs, 'parent')
         self.comment = attrN(kwargs, 'text_content')
         self.creator_name = attrN(kwargs, 'user.username')
+        self.creator_id = attrN(kwargs, 'user.id')
 
     @classmethod
     def from_webhook(cls, webhook_json):

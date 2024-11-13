@@ -29,7 +29,7 @@ def on_jira_issue_webhook(req: func.HttpRequest) -> func.HttpResponse:
 
     try:
         authenticate_request(req)
-        logging.info(json.dumps(obj=req_body))
+        # logging.info(json.dumps(obj=req_body))
         issue = IssueModel.from_webhook(req_body)
         ORCHESTATOR.sync_issue_to_clickup(issue)
 
@@ -50,6 +50,7 @@ def on_jira_issue_webhook(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500
         )
 
+
 @bp.function_name(name="OnJiraCommentWebhook")
 @bp.route(route="jira/comment/webhook", methods=['POST', 'PUT'], auth_level=AuthLevel.ANONYMOUS)
 def on_jira_comment_webhook(req: func.HttpRequest) -> func.HttpResponse:
@@ -63,7 +64,7 @@ def on_jira_comment_webhook(req: func.HttpRequest) -> func.HttpResponse:
 
     try:
         authenticate_request(req)
-        logging.info(json.dumps(obj=req_body))
+        # logging.info(json.dumps(obj=req_body))
         comment = IssueCommentModel.from_webhook(req_body)
         ORCHESTATOR.sync_comment_to_clickup(comment)
 

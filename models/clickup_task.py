@@ -6,7 +6,8 @@ from datetime import datetime
 from data import DEFAULT_ASSIGNEE, STATUS_TO_CLICKUP
 from data_private import USERS_TO_CLICKUP
 from models.jira_issue import IssueModel
-from utils import attrN
+from utils import attr_safe, attrN
+
 
 class TaskModel(object):
 
@@ -23,12 +24,15 @@ class TaskModel(object):
         self.due_date_time = False
         self.start_date = attrN(kwargs, 'start_date')
         self.start_date_time = False
+        custom_fields = attrN(kwargs, 'custom_fields')
+        self.locations = attr_safe(custom_fields, 'locations')
 
     @classmethod
     def from_issue(cls, issue: IssueModel):
         mapped_status = STATUS_TO_CLICKUP[issue.status['name']] if (
             issue.status['name'] in STATUS_TO_CLICKUP) else STATUS_TO_CLICKUP['Backlog']
-        mapped_user = DEFAULT_ASSIGNEE # USERS_TO_CLICKUP[issue.assignee['name']] if (issue.assignee['name'] in USERS_TO_CLICKUP) else None
+        # USERS_TO_CLICKUP[issue.assignee['name']] if (issue.assignee['name'] in USERS_TO_CLICKUP) else None
+        mapped_user = DEFAULT_ASSIGNEE
         parent_id = issue.parent.clickup_id if issue.parent else None
         # convert '2024-09-14' -> 1726264800000
         start_date = int(datetime.strptime(issue.start_date, '%Y-%m-%d').timestamp())*1000 if issue.start_date else None
@@ -47,11 +51,11 @@ class TaskModel(object):
         }
 
         return cls(**body)
-    
+
     @classmethod
     def from_api(cls, api_response):
         return cls(**api_response)
-    
+
     @classmethod
     def from_webhook(cls, webhook_response):
         payload = attrN(webhook_response, 'payload')
@@ -60,8 +64,11 @@ class TaskModel(object):
     def as_json(self):
         return self.__dict__
 
+
 """ClickUp Task model sutable for updating the task
 """
+
+
 class TaskUpdateModel(TaskModel):
 
     def __init__(self, **kwargs) -> None:
@@ -81,10 +88,10 @@ class TaskUpdateModel(TaskModel):
             'name': issue.summary,
             'description': issue.description,
             'status': mapped_status,
-            'priority': 3,            
+            'priority': 3,
             'parent': parent_id,
             'due_date': due_date,
-            'start_date': start_date            
+            'start_date': start_date
         }
 
         task = cls(**body)
@@ -94,4 +101,3 @@ class TaskUpdateModel(TaskModel):
         # }
 
         return task
-    

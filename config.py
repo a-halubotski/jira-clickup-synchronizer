@@ -9,6 +9,7 @@ class Config():
     jira_api_key = environ.get('JiraApiKey')
     clickup_api_key = environ.get('ClickUpApiKey')
     clickup_account_id = environ.get('ClickUpAccountId')
-    
+    clickup_sprint_folder_id = environ.get('ClickUpSprintFolderId')
+
 
 CONFIG = Config()

@@ -1,7 +1,8 @@
 from json import JSONDecodeError
+import json
+from typing import Dict
 import logging
 import time
-from typing import Dict
 import requests
 
 from config import CONFIG, Config
@@ -17,6 +18,7 @@ class ClickUpService(object):
             "Content-Type": "application/json",
             "Authorization": config.clickup_api_key
         }
+        self._sprint_folder_id = config.clickup_sprint_folder_id
 
     def get_task(self, task_id) -> TaskModel:
         task_json = self._call_function(requests.get, f'v2/task/{task_id}')
@@ -30,11 +32,28 @@ class ClickUpService(object):
 
     def update_task(self, task: TaskUpdateModel):
         logging.info(f'[ClickUpService.update_task] Updating task {task.id}')
-        self._call_function(requests.put, f'v2/task/{task.id}', payload=task.as_json())
+        updated_task_json = self._call_function(requests.put, f'v2/task/{task.id}', payload=task.as_json())
+        # logging.info(f'[ClickUpService.update_task] Updated Task JSON: {json.dumps(updated_task_json)}')
+        return TaskModel.from_api(updated_task_json)
 
     def create_comment(self, comment: TaskCommentModel):
         logging.info(f'[ClickUpService.create_comment] Creating comment {comment.as_json()}')
         self._call_function(requests.post, f'v2/task/{comment.task_id}/comment', payload=comment.as_json())
+
+    def find_sprint_list_id_by_name(self, sprint_name: str) -> int:
+        logging.info(
+            f'[ClickUpService.find_sprint_list_id_by_name] Looking up sprint list by name "{sprint_name}" in folder: {self._sprint_folder_id}')
+
+        sprint_lists_json = self._call_function(requests.get, f'v2/folder/{self._sprint_folder_id}/list')
+
+        if sprint_lists_json != None and 'lists' in sprint_lists_json:
+            for sprint in sprint_lists_json['lists']:
+                if sprint['name'] == sprint_name:
+                    return sprint['id']
+
+    def add_task_to_list(self, task_id, list_id):
+        logging.info(f'[ClickUpService.add_task_to_list] Task "{task_id}" to list {list_id}')
+        self._call_function(requests.post, f'v2/list/{list_id}/task/{task_id}')
 
     def _call_function(self, method, url, args=None, payload=None) -> Dict:
         url = f'https://api.clickup.com/api/{url}'

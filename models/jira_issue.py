@@ -3,7 +3,29 @@
 import json
 from typing import Dict
 
-from utils import attrN
+from utils import attr_safe, attrN
+
+
+class JiraSprintModel(object):
+
+    def __init__(self, **kwargs):
+        self.id = attrN(kwargs, 'id')
+        self.name = attrN(kwargs, 'name')
+
+    @classmethod
+    def from_webhook(cls, webhook_json: Dict):
+        """'fields' object expected"""
+        sprints = attr_safe(webhook_json, 'customfield_10007')
+
+        if sprints == None:
+            return
+
+        for sprint in sprints:
+            if sprint['state'] == 'active':
+                return cls(**sprint)
+
+        # if no active sprints: pick the last one
+        return cls(**sprints[-1]) if sprints is not None and len(sprints) > 0 else None
 
 
 class IssueModel(object):
@@ -36,6 +58,8 @@ class IssueModel(object):
 
         self.clickup_id = attrN(fields, 'customfield_11257')
         self.parent_key = attrN(fields, 'parent.key')
+
+        self.sprint = JiraSprintModel.from_webhook(fields)
 
         self.parent = None
 

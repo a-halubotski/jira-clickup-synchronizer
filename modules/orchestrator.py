@@ -1,5 +1,6 @@
 
 import logging
+import json
 
 from data_private import PROJECT_MAPPING, USERS_TO_CLICKUP
 from models.clickup_comment import ClickupCommentModel
@@ -11,7 +12,7 @@ from modules.clickup_service import CLICKUP_SERVICE, ClickUpService
 from modules.jira_service import JIRA_SERVICE, JiraService
 
 CLICKUP_PIVOTICS_DEV_USER_ID = 88206996
-JIRA_USER_FOR_CLICKUP_COMMENTS= "712020:e673ab54-0a31-44ca-887d-99ce7b45d856"
+JIRA_USER_FOR_CLICKUP_COMMENTS = "712020:e673ab54-0a31-44ca-887d-99ce7b45d856"
 
 
 class Orchestrator(object):
@@ -31,9 +32,12 @@ class Orchestrator(object):
             logging.info(f'[Orchestrator.sync_ticket_to_clickup] Getting JIRA parent issue: {issue.parent_key}')
             issue.parent = self._jira.get_issue(issue.parent_key)
 
+        task: TaskModel = None
+        is_new: bool = True
+
         if (not issue.clickup_id):
             # issue not synced before
-            self._create_task(issue)
+            task = self._create_task(issue)
         else:
             logging.info(f'[Orchestrator.sync_ticket_to_clickup] Updating existing ClickUp task: {issue.clickup_id}')
             task = self._clickup.get_task(issue.clickup_id)
@@ -41,16 +45,27 @@ class Orchestrator(object):
             if not task:
                 # hey, where is my task?!
                 logging.info(f'[Orchestrator.sync_ticket_to_clickup] Task not found, creating it back.')
-                self._create_task(issue)
+                task = self._create_task(issue)
             else:
                 self._update_task(issue, task)
+                is_new = False
+
+        # Assign task to Sprint
+        if issue.sprint != None and is_new:
+            self._add_task_to_sprint(task, issue.sprint)
+        else:
+            self._sync_task_sprints(task, issue)
 
     def sync_comment_to_clickup(self, comment: IssueCommentModel):
         logging.info(f'[Orchestrator.sync_comment_to_clickup] Comment: {comment.as_json()}')
-        # Do not sync comments from me (workaround when symc from ClickUp triggers webhook event)
+        # Do not sync comments added from ClickUp
+        if comment.is_private():
+            logging.warning("Private JIRA comment")
+            return
         if comment.author['id'] == JIRA_USER_FOR_CLICKUP_COMMENTS:
             logging.warning("Self JIRA comment")
             return
+
         issue: IssueModel = self._jira.get_issue(comment.issue_key)
         if not issue or not issue.clickup_id:
             logging.info(f'[Orchestrator.sync_comment_to_clickup] Issue not synchronized: {comment.issue_key}')
@@ -66,6 +81,7 @@ class Orchestrator(object):
         if clickup_comment.creator_id == CLICKUP_PIVOTICS_DEV_USER_ID:
             logging.info(f'[Orchestrator.sync_comment_to_jira] Self ClickUp comment')
             return
+
         # Find JIRA task
         jira_issue = self._jira.get_issue_by_clickup_id(clickup_comment.task_id)
         if jira_issue and jira_issue.key != None:
@@ -78,6 +94,8 @@ class Orchestrator(object):
         task = self._clickup.create_task(task, list_id)
         self._jira.update_issue_clickup_id(issue.key, task.id)
 
+        return task
+
     def _update_task(self, issue: IssueModel, task: TaskModel):
         current_assignees = list(map(lambda it: it['id'], task.assignees))
         new_assignee = USERS_TO_CLICKUP[issue.assignee['name']] if issue.assignee['name'] in USERS_TO_CLICKUP else None
@@ -86,7 +104,16 @@ class Orchestrator(object):
             current_assignees.remove(new_assignee)
 
         task_for_update = TaskUpdateModel.from_issue(issue, [new_assignee], current_assignees)
-        self._clickup.update_task(task_for_update)
+        return self._clickup.update_task(task_for_update)
+
+    def _add_task_to_sprint(self, task: TaskModel, sprint_name: str):
+        sprint_list_id = self._clickup.find_sprint_list_id_by_name(sprint_name)
+        if sprint_list_id:
+            self._clickup.add_task_to_list(task.id, sprint_list_id)
+
+    def _sync_task_sprints(self, task: TaskModel, issue: IssueModel):
+        if issue.sprint != None:
+            self._add_task_to_sprint(task, issue.sprint.name)
 
 
 ORCHESTATOR = Orchestrator(JIRA_SERVICE, CLICKUP_SERVICE)

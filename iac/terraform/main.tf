@@ -109,9 +109,9 @@ resource "azurerm_linux_function_app" "func" {
     JiraUsername      = var.jira_user_name
     JiraApiKey        = var.jira_api_key
 
-
     ClickUpApiKey    = var.clickup_api_key
     ClickUpAccountId = var.clickup_account_id
+    ClickUpSprintFolderId = var.clickup_sprint_folder_id
 
     WEBSITE_ENABLE_SYNC_UPDATE_SITE = false
     WEBSITE_WEBDEPLOY_USE_SCM       = true

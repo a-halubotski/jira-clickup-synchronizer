@@ -41,3 +41,6 @@ variable "clickup_api_key" {
 
 variable "clickup_account_id" {
 }
+
+variable "clickup_sprint_folder_id" {
+}

@@ -17,6 +17,7 @@ class IssueCommentModel(object):
             'id': attrN(comment, 'author.accountId'),
             'name': attrN(comment, 'author.displayName')
         }
+        self.visibility = attrN(comment, 'visibility')
 
     @classmethod
     def from_webhook(cls, webhook_json):
@@ -36,6 +37,9 @@ class IssueCommentModel(object):
             }
         }
         return cls(**body)
+
+    def is_private(self) -> bool:
+        return self.visibility != None
 
     def as_update_model(self):
         return {
